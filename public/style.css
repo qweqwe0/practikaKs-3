@@ -1,0 +1,60 @@
+body {
+    color: white;
+    background-color: black;
+  }
+  .container {
+    width: 1200px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-image: url(https://sneg.top/uploads/posts/2023-04/1680821591_sneg-top-p-nazemnii-transport-kartinki-krasivo-1.jpg);
+  }
+  h1 {
+    margin: 20px;
+  }
+  .field {
+    text-align: center;
+    width: 300px;
+    border-radius: 10px;
+    margin-left: 45px;
+    height: 40px;
+  }
+  body::-webkit-scrollbar-thumb {
+    border-radius: 0;
+    border: 0;
+    background-color: #b72929;
+  }
+  body::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 5px;
+    background-color: rgba(23, 25, 23, 0.3);
+  }
+  .butn {
+    border-radius: 10px;
+    border: none;
+    background-color: rgb(254, 16, 16);
+  }
+  .butn:hover {
+    background-color: rgb(125, 29, 29);
+  }
+  .list-group-item {
+    color: white;
+    background-color: rgba(68, 32, 32, 0.408);
+  }
+  .input-group {
+    justify-content: center;
+  }
+  img {
+    width: 100px;
+    height: 100px;
+  }
+  .icon {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }

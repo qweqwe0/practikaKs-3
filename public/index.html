@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Здесь вы можете скачать контент в Local Storage</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="container mt-3">
+      <h1>Введите ключевое слово</h1>
+      <div class="input-group mb-3">
+        <input type="text" class="field" placeholder="Введите название транспорта" id="keywordInput">
+        <input type="submit" class="butn" value="Отправить" id="searchButton">
+      </div>
+      <ul class="res list-group mb-3" id="urlList"></ul>
+      <div class="progress mb-3">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+      </div>
+      <ul class="list-group" id="contentList"></ul>
+    </div>
+
+    <script>
+      const searchButton = document.getElementById('searchButton');
+      const keywordInput = document.getElementById('keywordInput');
+      const urlList = document.getElementById('urlList');
+      const progressBar = document.getElementById('progressBar');
+      const contentList = document.getElementById('contentList');
+
+      searchButton.addEventListener('click', async () => {
+        const keyword = keywordInput.value;
+        if (!keyword) return;
+        const urls = await getUrls(keyword);
+        if (urls) {
+          displayUrls(urls);
+        }
+      });
+
+      async function getUrls(keyword) {
+        try {
+          const response = await fetch(`http://127.0.0.1:5501/search/${keyword}`);
+          if (response.ok) {
+            const urls = await response.json();
+            return urls;
+          } else {
+            console.error('Ошибка:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function displayUrls(urls) {
+        urlList.innerHTML = '';
+        urls.forEach(url => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.textContent = url;
+          li.addEventListener('click', () => downloadContentWithProgress(url));
+          urlList.appendChild(li);
+        });
+      }
+
+      async function downloadContentWithProgress(url) {
+        try {
+          const eventSource = new EventSource(`http://127.0.0.1:5501/download/${encodeURIComponent(url)}`);
+          eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.progress) {
+              progressBar.style.width = data.progress + '%';
+              progressBar.textContent = data.progress + '%';
+            }
+            if (data.content) {
+              localStorage.setItem(url, data.content);
+              displayContent(url, data.content);
+              eventSource.close();
+            }
+          };
+          eventSource.onerror = function(event) {
+            console.error('EventSource error:', event);
+            eventSource.close();
+          };
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function displayContent(url, content) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.textContent = url;
+        li.addEventListener('click', () => {
+          const storedContent = localStorage.getItem(url);
+          if (storedContent) {
+            const newWindow = window.open();
+            newWindow.document.write('<html><head><title>Content</title></head><body>');
+            if (url.endsWith('.mp4')) {
+              newWindow.document.write(`<video controls src="data:video/mp4;base64,${storedContent}"></video>`);
+            } else if (url.endsWith('.svg')) {
+              newWindow.document.write(`<img src="data:image/svg+xml;base64,${storedContent}" />`);
+            } else if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')) {
+              newWindow.document.write(`<img src="data:image;base64,${storedContent}" />`);
+            } else {
+              newWindow.document.write(`<pre>${atob(storedContent)}</pre>`);
+            }
+            newWindow.document.write('</body></html>');
+          }
+        });
+        contentList.appendChild(li);
+      }
+    </script>
+  </body>
+</html>
